@@ -11,7 +11,13 @@ const task = ref({
   url_video: null
 });
 const message_alert = ref({ status: false, message: null });
-const files = ref([]);
+const message_errors = ref({
+  title: null,
+  description: null,
+  done: null,
+  image: null,
+  url_video: null
+});
 
 function uploadFile(event: any)
 {
@@ -24,30 +30,10 @@ function uploadFile(event: any)
   } else {
     task.value.file = null;
   }
-
-  /*
-  input_files.forEach(file => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-      task.value.files.push({ name: file.name, type: 'image', file: reader.result?.toString() });
-    }
-  })*/
-  /*
-  console.log(file.value);
-  const reader = new FileReader();
-  if(file.value)
-  {
-    reader.readAsDataURL(file.value);
-    reader.onload = async () => {
-      task.value.file = reader.result?.toString()
-      console.log('finished load file')
-    }
-  }*/
 }
 
 function storeTask() {
-  console.log(task.value)
+  resetMessageErrors();
   const headers = {
     method:'POST',
     headers: {
@@ -59,9 +45,15 @@ function storeTask() {
   fetch('http://localhost:8765/api/tasks/', headers)
     .then( async (res) => {
       const response = await res.json()
-      message_alert.value = {
-        status: response.status,
-        message: response.status ? 'Se creo la tarea con éxito.' : 'Hubo un error'
+      if(res.status == 409)
+      {
+        message_errors.value = response.errors
+        console.log(response.errors);
+      } else {
+        message_alert.value = {
+          status: response.status,
+          message: response.status ? 'Se creo la tarea con éxito.' : 'Hubo un error'
+        }
       }
       if(response.status)
       {
@@ -69,36 +61,74 @@ function storeTask() {
       }
     })
 }
+
+function resetMessageErrors()
+{
+  message_errors.value = {
+    title: null,
+    description: null,
+    done: null,
+    image: null,
+    url_video: null
+  }
+}
 </script>
 
 <template>
   <h4>Nueva Tarea</h4>
   <Alert v-if="message_alert.message != null" :status="message_alert.status" :message="message_alert.message"/>
   <div class="row">
-    <form>
+    <form @submit.prevent="storeTask">
       <div class="mb-3">
         <label for="title" class="form-label">Título</label>
-        <input type="text" class="form-control" id="title" v-model="task.title" >
+        <input type="text" class="form-control" id="title"
+               :class="[ message_errors.title ? 'is-invalid' : '' ]"
+               v-model="task.title" required>
+          <div v-if="message_errors.title" class="invalid-feedback">
+            <dl>
+              <dd v-for="error in message_errors.title">{{ error }}</dd>
+            </dl>
+          </div>
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Descripción</label>
-        <textarea class="form-control" id="description" v-model="task.description"></textarea>
+        <textarea class="form-control" id="description"
+                  :class="[ message_errors.description ? 'is-invalid' : '' ]"
+                  v-model="task.description" required></textarea>
+        <div v-if="message_errors.description" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.description">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div class="mb-3">
         <label for="file" class="form-label">Imágen</label>
-        <input type="file" id="file" class="form-control" @change="uploadFile" accept="image/jpeg,image/png">
+        <input type="file" id="file" class="form-control"
+               :class="[ message_errors.image ? 'is-invalid' : '' ]"
+               @change="uploadFile" accept="image/jpeg,image/png">
+        <div v-if="message_errors.image" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.image">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div class="mb-3">
         <label for="video" class="form-label">Video</label>
         <input type="text" class="form-control" id="video"
                placeholder="https://www.youtube.com/embed/..."
+               :class="[ message_errors.url_video ? 'is-invalid' : '' ]"
                v-model="task.url_video">
+        <div v-if="message_errors.image" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.url_video">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" id="done" v-model="task.done">
         <label class="form-check-label" for="done">Realizada</label>
       </div>
-      <button type="button" class="btn btn-primary" @click="storeTask">Crear</button>
+      <button type="submit" class="btn btn-primary">Crear</button>
     </form>
   </div>
 </template>

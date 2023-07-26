@@ -19,6 +19,13 @@ const task = ref({
 const message_alert = ref({status: false, message: null });
 const imagen = ref(null);
 const url_video = ref(null);
+const message_errors = ref({
+  title: null,
+  description: null,
+  done: null,
+  image: null,
+  url_video: null
+});
 
 
 onMounted(() => {
@@ -65,6 +72,7 @@ function uploadFile(event: any)
 }
 
 function storeTask() {
+  resetMessageErrors();
   const headers = {
     method:'PATCH',
     headers: {
@@ -76,9 +84,15 @@ function storeTask() {
   fetch(`http://localhost:8765/api/tasks/${task.value.id}`, headers)
       .then( async (res) => {
         const response = await res.json();
-        message_alert.value = {
-          status: response.status,
-          message: response.status ? 'Se editó la tarea con éxito.' : 'Hubo un error'
+        if(res.status == 409)
+        {
+          message_errors.value = response.errors
+          console.log(response.errors);
+        } else {
+          message_alert.value = {
+            status: response.status,
+            message: response.status ? 'Se editó la tarea con éxito.' : 'Hubo un error'
+          }
         }
         if(response.status)
         {
@@ -89,6 +103,17 @@ function storeTask() {
       .catch( () => message_alert.value = { status: false, message: 'Hubo un error' })
       .finally(() => setTimeout(() => message_alert.value = { status: false, message: null },3000 ))
 
+}
+
+function resetMessageErrors()
+{
+  message_errors.value = {
+    title: null,
+    description: null,
+    done: null,
+    image: null,
+    url_video: null
+  }
 }
 </script>
 
@@ -103,31 +128,66 @@ function storeTask() {
     <form v-if="task.id != null">
       <div class="mb-3">
         <label for="title" class="form-label">Título</label>
-        <input type="text" class="form-control" id="title" v-model="task.title" >
+        <input type="text" class="form-control" id="title"
+               :class="[ message_errors.title ? 'is-invalid' : '' ]"
+               v-model="task.title" >
+        <div v-if="message_errors.title" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.title">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Descripción</label>
-        <textarea class="form-control" id="description" v-model="task.description"></textarea>
+        <textarea class="form-control" id="description"
+                  :class="[ message_errors.description ? 'is-invalid' : '' ]"
+                  v-model="task.description"></textarea>
+        <div v-if="message_errors.description" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.description">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div class="mb-3">
         <label for="file" class="form-label">Imágen</label>
-        <input type="file" id="file" class="form-control" @change="uploadFile" accept="image/jpeg,image/png">
+        <input type="file" id="file" class="form-control"
+               accept="image/jpeg,image/png"
+               :class="[ message_errors.image ? 'is-invalid' : '' ]"
+               @change="uploadFile" >
+        <div v-if="message_errors.image" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.image">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
-      <div v-if="task.image != nul" class="mb-3">
+      <div v-if="task.image" class="mb-3">
         <img :src="task.image" class="img-fluid">
       </div>
       <div class="mb-3">
         <label for="video" class="form-label">Video</label>
         <input type="text" class="form-control" id="video"
                placeholder="https://www.youtube.com/embed/..."
+               :class="[ message_errors.url_video ? 'is-invalid' : '' ]"
                v-model="task.url_video" >
+        <div v-if="message_errors.url_video" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.url_video">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <div v-if="url_video" class="ratio ratio-16x9 mb-2">
         <iframe :src="url_video" title="Video" allowfullscreen></iframe>
       </div>
       <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="done" v-model="task.done">
+        <input type="checkbox" class="form-check-input" id="done"
+               :class="[ message_errors.done ? 'is-invalid' : '' ]"
+               v-model="task.done">
         <label class="form-check-label" for="done">Realizada</label>
+        <div v-if="message_errors.done" class="invalid-feedback">
+          <dl>
+            <dd v-for="error in message_errors.done">{{ error }}</dd>
+          </dl>
+        </div>
       </div>
       <button type="button" class="btn btn-primary" @click="storeTask">Editar</button>
     </form>
