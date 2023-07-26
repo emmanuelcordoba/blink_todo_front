@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import {ref, registerRuntimeCompiler} from "vue";
+import {ref } from "vue";
 import router from '../router';
 import Alert from "../components/Alert.vue";
+const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 const task = ref({
   title: '',
@@ -42,13 +43,12 @@ function storeTask() {
     },
     body: JSON.stringify(task.value)
   }
-  fetch('http://localhost:8765/api/tasks/', headers)
+  fetch(backend_url, headers)
     .then( async (res) => {
       const response = await res.json()
       if(res.status == 409)
       {
         message_errors.value = response.errors
-        console.log(response.errors);
       } else {
         message_alert.value = {
           status: response.status,

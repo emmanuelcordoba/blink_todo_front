@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
 import router from "@/router";
 
 const props = defineProps(['task'])
 const task = props.task;
 
-onMounted(() => {
-  //console.log(task);
-})
-
-function showTask(id: string){
-  router.push({ path: `/${id}` })
+function toShowTask(){
+  router.push({ path: `/${task.id}` })
 }
 </script>
 
@@ -20,7 +15,7 @@ function showTask(id: string){
       <div class="card-body">
         <h5 class="card-title">{{ task.title }}</h5>
         <p>Estado: <span class="badge  " :class="[ task.done ? 'text-bg-success' : 'text-bg-warning' ]">{{ task.done ? 'Finalizada' : 'Pendiente' }}</span></p>
-        <button type="button" class="btn btn-primary" @click="showTask(task.id)">Ver</button>
+        <button type="button" class="btn btn-primary" @click="toShowTask">Ver</button>
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@ import {onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import router from '../router';
 import Alert from "../components/Alert.vue";
+const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 const route = useRoute()
 const task = ref(null);
@@ -17,7 +18,7 @@ onMounted(() => {
       'Accept': 'application/json',
     }
   }
-  fetch(`http://localhost:8765/api/tasks/${id}`, headers)
+  fetch(`${backend_url}/${id}`, headers)
       .then( async (res) => {
         console.log(res)
         if(res.ok)
@@ -52,7 +53,7 @@ function deleteTask()
         'Accept': 'application/json'
       }
     }
-    fetch(`http://localhost:8765/api/tasks/${task.value.id}`, requestOptions)
+    fetch(`${backend_url}/${task.value.id}`, requestOptions)
       .then( async (res) => {
         console.log(res)
         message_alert.value = {
@@ -71,12 +72,12 @@ function toggleDone() {
   const headers = {
     method:'PATCH',
     headers: {
-      'Accept': 'application/json',
+      "Accept": "application/json",
       "Content-Type": "application/json"
     },
     body: JSON.stringify(task.value)
   }
-  fetch(`http://localhost:8765/api/tasks/${task.value.id}`, headers)
+  fetch(`${backend_url}/${task.value.id}`, headers)
     .then( async (res) => {
       message_alert.value = {
         status: res.ok,

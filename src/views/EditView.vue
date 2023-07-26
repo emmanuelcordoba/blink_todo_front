@@ -1,11 +1,9 @@
-
-
 <script setup lang="ts">
 import { onMounted ,ref } from "vue";
 import { useRoute } from "vue-router";
 import router from '../router';
 import Alert from "../components/Alert.vue";
-import * as url from "url";
+const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 const route = useRoute()
 const task = ref({
@@ -36,7 +34,7 @@ onMounted(() => {
       'Accept': 'application/json',
     }
   }
-  fetch(`http://localhost:8765/api/tasks/${id}`, headers)
+  fetch(`${backend_url}/${id}`, headers)
       .then( async (res) => {
         console.log(res)
         if(res.ok)
@@ -81,7 +79,7 @@ function storeTask() {
     },
     body: JSON.stringify(task.value)
   }
-  fetch(`http://localhost:8765/api/tasks/${task.value.id}`, headers)
+  fetch(`${backend_url}/${task.value.id}`, headers)
       .then( async (res) => {
         const response = await res.json();
         if(res.status == 409)
@@ -125,12 +123,12 @@ function resetMessageErrors()
     </div>
   </div>
   <div class="row">
-    <form v-if="task.id != null">
+    <form v-if="task.id != null" @submit.prevent="storeTask">
       <div class="mb-3">
         <label for="title" class="form-label">Título</label>
         <input type="text" class="form-control" id="title"
                :class="[ message_errors.title ? 'is-invalid' : '' ]"
-               v-model="task.title" >
+               v-model="task.title" required>
         <div v-if="message_errors.title" class="invalid-feedback">
           <dl>
             <dd v-for="error in message_errors.title">{{ error }}</dd>
@@ -141,7 +139,7 @@ function resetMessageErrors()
         <label for="description" class="form-label">Descripción</label>
         <textarea class="form-control" id="description"
                   :class="[ message_errors.description ? 'is-invalid' : '' ]"
-                  v-model="task.description"></textarea>
+                  v-model="task.description" required></textarea>
         <div v-if="message_errors.description" class="invalid-feedback">
           <dl>
             <dd v-for="error in message_errors.description">{{ error }}</dd>
@@ -189,7 +187,7 @@ function resetMessageErrors()
           </dl>
         </div>
       </div>
-      <button type="button" class="btn btn-primary" @click="storeTask">Editar</button>
+      <button type="submit" class="btn btn-primary">Editar</button>
     </form>
   </div>
 </template>
