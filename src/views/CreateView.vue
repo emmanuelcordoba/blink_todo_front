@@ -2,6 +2,7 @@
 import {ref } from "vue";
 import router from '../router';
 import Alert from "../components/Alert.vue";
+import TaskResources from '../resources/TaskResources.js';
 const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 const task = ref({
@@ -35,15 +36,7 @@ function uploadFile(event: any)
 
 function storeTask() {
   resetMessageErrors();
-  const headers = {
-    method:'POST',
-    headers: {
-      'Accept': 'application/json',
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(task.value)
-  }
-  fetch(backend_url, headers)
+  TaskResources.store( task.value )
     .then( async (res) => {
       const response = await res.json()
       if(res.status == 409)

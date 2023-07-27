@@ -3,7 +3,7 @@ import { onMounted ,ref } from "vue";
 import { useRoute } from "vue-router";
 import router from '../router';
 import Alert from "../components/Alert.vue";
-const backend_url = import.meta.env.VITE_BACKEND_URL;
+import TaskResources from '../resources/TaskResources.js';
 
 const route = useRoute()
 const task = ref({
@@ -28,13 +28,7 @@ const message_errors = ref({
 
 onMounted(() => {
   const id = route.params.id;
-  const headers = {
-    method:'GET',
-    headers: {
-      'Accept': 'application/json',
-    }
-  }
-  fetch(`${backend_url}/${id}`, headers)
+  TaskResources.getTask(id)
       .then( async (res) => {
         console.log(res)
         if(res.ok)
@@ -71,15 +65,7 @@ function uploadFile(event: any)
 
 function storeTask() {
   resetMessageErrors();
-  const headers = {
-    method:'PATCH',
-    headers: {
-      'Accept': 'application/json',
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(task.value)
-  }
-  fetch(`${backend_url}/${task.value.id}`, headers)
+  TaskResources.edit(task.value)
       .then( async (res) => {
         const response = await res.json();
         if(res.status == 409)

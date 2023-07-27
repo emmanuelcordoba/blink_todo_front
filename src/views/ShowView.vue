@@ -3,7 +3,7 @@ import {onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import router from '../router';
 import Alert from "../components/Alert.vue";
-const backend_url = import.meta.env.VITE_BACKEND_URL;
+import TaskResources from '../resources/TaskResources.js';
 
 const route = useRoute()
 const task = ref(null);
@@ -12,13 +12,7 @@ const message_alert = ref({ status: false, message: null});
 
 onMounted(() => {
   const id = route.params.id;
-  const headers = {
-    method:'GET',
-    headers: {
-      'Accept': 'application/json',
-    }
-  }
-  fetch(`${backend_url}/${id}`, headers)
+  TaskResources.getTask(id)
       .then( async (res) => {
         console.log(res)
         if(res.ok)
@@ -47,13 +41,7 @@ function deleteTask()
 {
   if (confirm("Press a button!")) {
     console.log('Borrar')
-    const requestOptions = {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json'
-      }
-    }
-    fetch(`${backend_url}/${task.value.id}`, requestOptions)
+    TaskResources.delete(task.value.id)
       .then( async (res) => {
         console.log(res)
         message_alert.value = {
@@ -69,15 +57,7 @@ function deleteTask()
 
 function toggleDone() {
   task.value.done = !task.value.done
-  const headers = {
-    method:'PATCH',
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(task.value)
-  }
-  fetch(`${backend_url}/${task.value.id}`, headers)
+  TaskResources.edit(task.value)
     .then( async (res) => {
       message_alert.value = {
         status: res.ok,

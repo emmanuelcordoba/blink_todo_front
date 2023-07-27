@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import TaskCardPreview from '../components/TaskCardPreview.vue'
-const backend_url = import.meta.env.VITE_BACKEND_URL;
+import TaskResources from '../resources/TaskResources.js';
 
 const tasks_todo = ref([]);
 const tasks_done = ref([]);
 
 onMounted(() => {
-  console.log(backend_url);
-  fetch(backend_url, { headers: { "Accept": "application/json" }})
+  TaskResources.getAll()
       .then( async (res) => {
         const tasks = (await res.json()).tasks;
         tasks_todo.value = tasks.filter((t) => !t.done);
