@@ -30,13 +30,11 @@ onMounted(() => {
   const id = route.params.id;
   TaskResources.getTask(id)
       .then( async (res) => {
-        console.log(res)
         if(res.ok)
         {
           task.value = (await res.json()).task
           imagen.value = task.value.image
           url_video.value = task.value.url_video
-          console.log(task.value)
         } else {
           message_alert.value = { status: false, message: 'No se encontró la tarea.'};
         }
@@ -71,7 +69,6 @@ function storeTask() {
         if(res.status == 409)
         {
           message_errors.value = response.errors
-          console.log(response.errors);
         } else {
           message_alert.value = {
             status: response.status,
