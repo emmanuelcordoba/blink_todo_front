@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {onMounted, ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import router from '../router';
 import Alert from "../components/Alert.vue";
 import TaskResources from '../resources/TaskResources.js';
@@ -9,16 +9,13 @@ const route = useRoute()
 const task = ref(null);
 const message_alert = ref({ status: false, message: null});
 
-
 onMounted(() => {
   const id = route.params.id;
   TaskResources.getTask(id)
       .then( async (res) => {
-        console.log(res)
         if(res.ok)
         {
           task.value = (await res.json()).task
-          console.log(task.value)
         } else {
           message_alert.value = { status: false, message: 'No se encontró la tarea.'};
         }
@@ -40,10 +37,8 @@ function toEditTask()
 function deleteTask()
 {
   if (confirm("Press a button!")) {
-    console.log('Borrar')
     TaskResources.delete(task.value.id)
       .then( async (res) => {
-        console.log(res)
         message_alert.value = {
           status: res.ok,
           message: res.ok ? 'Se borró la tarea con éxito.' : 'Hubo un problema'
